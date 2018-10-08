@@ -3,42 +3,69 @@
 #include <vector>
 #include <string>
 #include <string.h>
+#include <opencv2/opencv.hpp>
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <X11/Xlib.h>
+#include <cstdlib>
+#include <iostream>
+
 
 using namespace std;
 
-std::vector<char>  wallpaper_resizer(const char *wallpaper_folder)
+void wallpaper_resizer(const char *wallpaper_folder)
 {
-	std::vector<char> wallpapers;
 	DIR *dirp;
 	struct dirent *directory;
 	string temp;
 	string string_wallpaper_folder=wallpaper_folder;
+	cv::Mat image;
+	Display* d = XOpenDisplay(NULL);
+	Screen*  s = DefaultScreenOfDisplay(d);
+	string output_folder_string=string_wallpaper_folder+string("/wallpaper_resized");
+	
+	
+	const int dir_err = system(strdup((string("mkdir -p ")+output_folder_string).c_str()));
+	if (-1 == dir_err)
+	{
+		printf("Error creating directory!n");
+		exit(1);
+	}
 	
 	dirp = opendir(wallpaper_folder);
 	if (dirp)
     {
         while ((directory = readdir(dirp)) != NULL)
         {
-			if (bool operator||(directory->d_name!=string("."), directory->d_name!=string("..")))
+			if (directory->d_name!=string(".") && directory->d_name!=string("..") && directory->d_name!=string("wallpaper_resized") )
 			{
 				string sep="/";
 				temp = sep+directory->d_name;
 				temp = string_wallpaper_folder+temp;
-				//printf("%s\n",temp.c_str());
-				printf("%s\n",directory->d_name);
+				image = cv::imread(temp);
+				try
+				{
+					cv::resize(image,image,cv::Size(s->width,s->height));
+					cv::imwrite(strdup((output_folder_string+sep+directory->d_name).c_str()),image);
+				}
+				catch (...)
+				{
+					cout << directory->d_name << endl;
+				}
 			}
-				
-        }
-
+		}
+		//namedWindow( "Display window", cv::WINDOW_AUTOSIZE );
+		//cv::imshow( "Display window", image ); 
+		//cv::waitKey(0);
         closedir(dirp);
-    }
-	return wallpapers;
+	}
 }
+
 int main(int argc, char **argv)
 {
-	std::vector<char>  test;
-	test = wallpaper_resizer("/home/bryan/Pictures/Wallpaper");
-	// for (auto const& c : test)
-	//	std::cout << c << ' ';
+	char *folder = new char[10000];
+	cout<< "Enter the wallpaper path: "<< endl;
+	cin >> folder ;
+	wallpaper_resizer(folder);
 	return 0;
 }
