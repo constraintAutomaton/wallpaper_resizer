@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <dirent.h> 
-#include <vector>
 #include <string>
 #include <string.h>
 #include <opencv2/opencv.hpp>
@@ -54,9 +53,6 @@ void wallpaper_resizer(const char *wallpaper_folder)
 				}
 			}
 		}
-		//namedWindow( "Display window", cv::WINDOW_AUTOSIZE );
-		//cv::imshow( "Display window", image ); 
-		//cv::waitKey(0);
         closedir(dirp);
 	}
 }
